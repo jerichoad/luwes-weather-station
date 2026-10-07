@@ -1,0 +1,37 @@
+info:
+  name: Update Sensor
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{apiUrl}}/sensors/{{sensorId}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "manufacturer": "Sensirion",
+        "model": "SHT31-D",
+        "notes": "Diperbarui"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    Field opsional: `manufacturer`, `model`, `notes`, `retired` (boolean, 409 `RESOURCE_IN_USE` bila masih terpasang aktif).
+  type: text/markdown

@@ -1,0 +1,37 @@
+info:
+  name: Update Device
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{apiUrl}}/devices/{{deviceId}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Stasiun Uji Coba (Updated)",
+        "location_id": {{locationId}}
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    Field opsional: `name`, `location_id`, `status` (`provisioned|active|maintenance|decommissioned`), `status_reason` (wajib bila `status` dikirim).
+    Transisi ilegal balik `409 INVALID_STATUS_TRANSITION`.
+  type: text/markdown

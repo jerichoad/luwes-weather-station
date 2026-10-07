@@ -1,0 +1,19 @@
+opencollection: 1.0.0
+
+info:
+  name: Luwes Weather Station API
+request:
+  scripts:
+    - type: before-request
+      code: |-
+        req.setHeader("Accept", "application/json");
+docs:
+  content: |-
+    ### Luwes Weather Station API (Laravel 12)
+
+    - Base: `{{baseUrl}}` (default `http://localhost:8080`), prefix `/api/v1`.
+    - Endpoint manajemen saat ini belum memakai auth (tidak ada middleware `auth:sanctum`).
+    - Endpoint `/api/v1/ingest/*` memakai `Authorization: Bearer <api_key>` device + `device_id` di body.
+    - API key device didapat dari `POST /devices` atau `POST /devices/{id}/credentials/rotate` (ditampilkan sekali), otomatis disimpan ke env var `deviceApiKey`.
+    - Envelope sukses: `{ data, meta?, request_id }`. Error: `{ error: { code, message, details }, request_id }`.
+  type: text/markdown

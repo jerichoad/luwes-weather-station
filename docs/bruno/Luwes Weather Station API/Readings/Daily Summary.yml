@@ -1,0 +1,42 @@
+info:
+  name: Daily Summary
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{apiUrl}}/readings/summary?device_id={{deviceId}}&from=2026-10-01&to=2026-10-07"
+  params:
+    - name: device_id
+      value: "{{deviceId}}"
+    - name: from
+      value: 2026-10-01
+    - name: to
+      value: 2026-10-07
+    - name: page
+      value: "1"
+      disabled: true
+    - name: per_page
+      value: "31"
+      disabled: true
+  body:
+    type: none
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.meta.timezone).to.equal("Asia/Jakarta");
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    `from`/`to` format `Y-m-d`, tanggal kalender WIB.
+  type: text/markdown

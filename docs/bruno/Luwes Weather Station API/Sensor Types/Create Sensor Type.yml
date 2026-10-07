@@ -1,0 +1,48 @@
+info:
+  name: Create Sensor Type
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{apiUrl}}/sensor-types"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "code": "uv_index",
+        "name": "Indeks UV",
+        "unit": "index",
+        "kind": "gauge",
+        "min_value": 0,
+        "max_value": 15,
+        "precision": 1,
+        "default_agg": "avg"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("sensorTypeId", res.body.data.id);
+        }
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    `kind`: `gauge|counter|angle`. Wajib: `code`,`name`,`unit`,`kind`,`min_value`,`max_value` (`max_value > min_value`).
+    Opsional: `precision` (0-6), `counter_factor`, `derived_unit`, `error_codes[]`, `default_agg` (`avg|min|max|sum`).
+  type: text/markdown

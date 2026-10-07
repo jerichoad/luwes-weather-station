@@ -1,0 +1,37 @@
+info:
+  name: Change Device Status
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{apiUrl}}/devices/{{deviceId}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "status": "active",
+        "status_reason": "Instalasi selesai"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200 atau 409 (transisi tidak valid)", function() {
+          expect([200, 409]).to.include(res.status);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    Nilai `status`: `provisioned`, `active`, `maintenance`, `decommissioned`.
+    `decommissioned` mencabut semua credential dan menutup instalasi sensor aktif.
+  type: text/markdown

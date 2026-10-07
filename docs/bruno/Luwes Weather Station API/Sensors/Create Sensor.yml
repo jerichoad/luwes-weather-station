@@ -1,0 +1,44 @@
+info:
+  name: Create Sensor
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{apiUrl}}/sensors"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "serial_number": "SN-TST-0001",
+        "sensor_type": "temp_air",
+        "manufacturer": "Sensirion",
+        "model": "SHT31",
+        "notes": "Sensor uji coba"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("sensorId", res.body.data.id);
+        }
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    `sensor_type` merujuk ke `code` SensorType (bukan ID).
+  type: text/markdown

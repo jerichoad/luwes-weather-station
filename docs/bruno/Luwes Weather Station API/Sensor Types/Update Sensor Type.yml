@@ -1,0 +1,36 @@
+info:
+  name: Update Sensor Type
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{apiUrl}}/sensor-types/{{sensorTypeId}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Indeks UV (Updated)",
+        "precision": 2
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    `code` dan `kind` tidak bisa diubah lewat endpoint ini.
+  type: text/markdown

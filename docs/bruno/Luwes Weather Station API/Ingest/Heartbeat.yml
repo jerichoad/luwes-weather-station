@@ -1,0 +1,43 @@
+info:
+  name: Heartbeat
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{apiUrl}}/ingest/heartbeat"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "device_id": "{{deviceCode}}",
+        "ts": {{ts}},
+        "fw": "1.0.0",
+        "battery_v": 12.6,
+        "rssi": -65,
+        "uptime_s": 3600
+      }
+  auth:
+    type: bearer
+    token: "{{deviceApiKey}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("ts", Math.floor(Date.now() / 1000));
+    - type: tests
+      code: |-
+        test("Status 200/201", function() {
+          expect([200, 201]).to.include(res.status);
+        });
+
+        test("Ada server_time", function() {
+          expect(res.body.data).to.have.property("server_time");
+        });
+
+settings:
+  encodeUrl: true

@@ -1,0 +1,38 @@
+info:
+  name: Create Calibration
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{apiUrl}}/sensors/{{sensorId}}/calibrations"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "scale_factor": 1.0,
+        "offset_value": -0.5,
+        "note": "Kalibrasi awal"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.data).to.have.property("preview");
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    `scale_factor` tidak boleh 0 (`OUT_OF_BOUNDS`). `effective_from` opsional (default now, tidak boleh mundur >5 menit -> `BACKDATED_NOT_SUPPORTED`).
+  type: text/markdown

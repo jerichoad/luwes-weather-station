@@ -1,0 +1,23 @@
+info:
+  name: Delete Sensor
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{apiUrl}}/sensors/{{sensorId}}"
+  body:
+    type: none
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200 atau 409 (masih terpasang)", function() {
+          expect([200, 409]).to.include(res.status);
+        });
+
+settings:
+  encodeUrl: true

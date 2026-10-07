@@ -1,0 +1,40 @@
+info:
+  name: Create Location
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{apiUrl}}/locations"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "code": "TST",
+        "name": "Stasiun Uji Coba",
+        "address": "Alamat contoh",
+        "latitude": -6.9,
+        "longitude": 107.6,
+        "altitude_m": 750
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("locationId", res.body.data.id);
+        }
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true

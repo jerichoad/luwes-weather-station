@@ -1,0 +1,44 @@
+info:
+  name: Create Device
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{apiUrl}}/devices"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "code": "WS-TST-001",
+        "name": "Stasiun Uji Coba",
+        "location_id": {{locationId}},
+        "create_default_channels": true
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("deviceId", res.body.data.id);
+          bru.setEnvVar("deviceCode", res.body.data.code);
+          bru.setEnvVar("deviceApiKey", res.body.data.credential.api_key);
+        }
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+
+        test("API key dikembalikan", function() {
+          expect(res.body.data.credential.api_key).to.match(/^wsk_/);
+        });
+
+settings:
+  encodeUrl: true

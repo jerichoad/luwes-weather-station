@@ -1,0 +1,66 @@
+info:
+  name: Telemetry Batch
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{apiUrl}}/ingest/telemetry/batch"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "device_id": "{{deviceCode}}",
+        "fw": "1.0.0",
+        "batch": [
+          {
+            "ts": {{ts1}},
+            "seq": {{seq1}},
+            "battery_v": 12.5,
+            "rssi": -70,
+            "readings": [
+              { "s": "temp_air", "v": 25.9 },
+              { "s": "humidity", "v": 80.1 }
+            ]
+          },
+          {
+            "ts": {{ts2}},
+            "seq": {{seq2}},
+            "battery_v": 12.5,
+            "rssi": -69,
+            "readings": [
+              { "s": "temp_air", "v": 26.1 },
+              { "s": "humidity", "v": 79.4 }
+            ]
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{deviceApiKey}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const now = Math.floor(Date.now() / 1000);
+        bru.setVar("ts1", now - 120);
+        bru.setVar("ts2", now - 60);
+        bru.setVar("seq1", (now - 120) % 100000);
+        bru.setVar("seq2", (now - 60) % 100000);
+    - type: tests
+      code: |-
+        test("Status 201/200/207/422", function() {
+          expect([200, 201, 207, 422]).to.include(res.status);
+        });
+
+        test("Ada summary dan items", function() {
+          expect(res.body.data).to.have.property("summary");
+          expect(res.body.data.items).to.be.an("array");
+        });
+
+settings:
+  encodeUrl: true

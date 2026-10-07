@@ -1,0 +1,38 @@
+info:
+  name: Install Sensor
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{apiUrl}}/devices/{{deviceId}}/sensors"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "sensor_id": {{sensorId}},
+        "channel_key": "temp_air"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 201", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.data).to.have.property("installation_id");
+        });
+
+settings:
+  encodeUrl: true
+
+docs:
+  content: |-
+    Opsional: `installed_at` (date, default now). `channel_key` default = kode sensor type.
+    Error: `SENSOR_ALREADY_INSTALLED`, `CHANNEL_OCCUPIED` (409), `SENSOR_TYPE_MISMATCH` (422), `DEVICE_DECOMMISSIONED` (403).
+  type: text/markdown

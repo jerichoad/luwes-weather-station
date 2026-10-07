@@ -1,0 +1,54 @@
+info:
+  name: Telemetry Single
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{apiUrl}}/ingest/telemetry"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "device_id": "{{deviceCode}}",
+        "fw": "1.0.0",
+        "ts": {{ts}},
+        "seq": {{seq}},
+        "battery_v": 12.6,
+        "rssi": -67,
+        "readings": [
+          { "s": "temp_air", "v": 26.4 },
+          { "s": "humidity", "v": 78.2 },
+          { "s": "pressure", "v": 1009.8 },
+          { "s": "wind_speed", "v": 3.1 },
+          { "s": "wind_dir", "v": 135 },
+          { "s": "rain_counter", "v": 42 },
+          { "s": "solar_rad", "v": 512.3 }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{deviceApiKey}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("ts", Math.floor(Date.now() / 1000));
+        bru.setVar("seq", Math.floor(Date.now() / 1000) % 100000);
+    - type: tests
+      code: |-
+        test("Status 201 (accepted) atau 200 (duplicate)", function() {
+          expect([200, 201]).to.include(res.status);
+        });
+
+        test("Ada ringkasan readings", function() {
+          expect(res.body.data).to.have.property("status");
+          expect(res.body.data.readings).to.have.property("stored");
+        });
+
+settings:
+  encodeUrl: true

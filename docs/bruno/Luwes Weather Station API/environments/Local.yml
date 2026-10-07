@@ -1,0 +1,18 @@
+name: Local
+variables:
+  - name: baseUrl
+    value: http://localhost:18080
+  - name: apiUrl
+    value: "{{baseUrl}}/api/v1"
+  - name: deviceCode
+    value: WS-GRT-001
+  - secret: true
+    name: deviceApiKey
+  - name: deviceId
+    value: "1"
+  - name: locationId
+    value: "1"
+  - name: sensorId
+    value: "1"
+  - name: sensorTypeId
+    value: "1"
