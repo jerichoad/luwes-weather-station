@@ -1,0 +1,112 @@
+x-backend-env: &backend-env
+  APP_ENV: ${APP_ENV:-production}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_URL: ${APP_URL:-http://localhost:${BACKEND_PORT_FORWARD:-8080}}
+  APP_TIMEZONE: UTC
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: pgsql
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_DATABASE: ${DB_DATABASE:-weather}
+  DB_USERNAME: ${DB_USERNAME:-weather}
+  DB_PASSWORD: ${DB_PASSWORD:-weather}
+  DB_SSLMODE: disable
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  CACHE_STORE: redis
+  QUEUE_CONNECTION: redis
+  SESSION_DRIVER: redis
+  SHOW_WELCOME_MESSAGE: "false"
+
+services:
+  db:
+    image: timescale/timescaledb:2.30.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-weather}
+      POSTGRES_USER: ${DB_USERNAME:-weather}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-weather}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT_FORWARD:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-weather} -d ${DB_DATABASE:-weather}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT_FORWARD:-6380}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *backend-env
+      APP_INIT: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT_FORWARD:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  scheduler:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *backend-env
+      APP_INIT: "false"
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    stop_signal: SIGTERM
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8080
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-wsm_token}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT_FORWARD:-3000}:3000"
+
+  simulator:
+    build: ./simulator
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8080
+      SIM_DEVICES: ${SEED_DEVICE_KEYS}
+      SIM_SCENARIO: ${SIM_SCENARIO:-normal}
+      SIM_INTERVAL_S: ${SIM_INTERVAL_S:-60}
+      SIM_HEARTBEAT_S: ${SIM_HEARTBEAT_S:-300}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  dbdata:
